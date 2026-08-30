@@ -3,6 +3,9 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
+// Smart API URL: Uses Vercel environment variable in production, localhost in development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -10,11 +13,12 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      axios.get('http://localhost:5000/api/auth/profile', {
+      axios.get(`${API_URL}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => setUser(res.data.user))
       .catch(() => {
+        // If token is invalid, clear it
         localStorage.removeItem('token');
         setToken(null);
       })
@@ -25,25 +29,25 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-  const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-  localStorage.setItem('token', res.data.token);
-  setToken(res.data.token);
-  setUser(res.data.user);
-  
-  // Update streak on login
-  try {
-    await axios.post('http://localhost:5000/api/progress/streak', {}, {
-      headers: { Authorization: `Bearer ${res.data.token}` }
-    });
-  } catch (err) {
-    console.log('Streak update failed');
-  }
-  
-  return res.data;
-};
+    const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+    localStorage.setItem('token', res.data.token);
+    setToken(res.data.token);
+    setUser(res.data.user);
+    
+    // Update user streak on successful login
+    try {
+      await axios.post(`${API_URL}/api/progress/streak`, {}, {
+        headers: { Authorization: `Bearer ${res.data.token}` }
+      });
+    } catch (err) {
+      console.log('Streak update failed (non-critical)');
+    }
+    
+    return res.data;
+  };
 
   const register = async (name, email, password, college) => {
-    const res = await axios.post('http://localhost:5000/api/auth/register', { name, email, password, college });
+    const res = await axios.post(`${API_URL}/api/auth/register`, { name, email, password, college });
     localStorage.setItem('token', res.data.token);
     setToken(res.data.token);
     setUser(res.data.user);
