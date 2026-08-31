@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Smart API URL: Uses Vercel environment variable in production, localhost in development
+// Use production URL on Vercel, localhost for local development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const AuthProvider = ({ children }) => {
@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
       })
       .then(res => setUser(res.data.user))
       .catch(() => {
-        // If token is invalid, clear it
         localStorage.removeItem('token');
         setToken(null);
       })
@@ -29,18 +28,17 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-       const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+    const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
     localStorage.setItem('token', res.data.token);
     setToken(res.data.token);
     setUser(res.data.user);
     
-    // Update user streak on successful login
     try {
       await axios.post(`${API_URL}/api/progress/streak`, {}, {
         headers: { Authorization: `Bearer ${res.data.token}` }
       });
     } catch (err) {
-      console.log('Streak update failed (non-critical)');
+      console.log('Streak update failed');
     }
     
     return res.data;
