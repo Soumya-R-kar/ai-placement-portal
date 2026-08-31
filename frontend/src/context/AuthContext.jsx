@@ -29,11 +29,22 @@ export const AuthProvider = ({ children }) => {
     fetchProfile();
   }, [token]);
 
-  const login = async (email, password) => {
+    const login = async (email, password) => {
     const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
     localStorage.setItem('token', res.data.token);
     setToken(res.data.token);
     setUser(res.data.user);
+    
+    // Fetch latest progress data
+    try {
+      const progressRes = await axios.get(`${API_URL}/api/progress`, {
+        headers: { Authorization: `Bearer ${res.data.token}` }
+      });
+      setUser(prev => ({ ...prev, progress: progressRes.data.progress, xp: progressRes.data.xp, level: progressRes.data.level }));
+    } catch (err) {
+      console.log('Progress fetch skipped');
+    }
+    
     return res.data;
   };
 

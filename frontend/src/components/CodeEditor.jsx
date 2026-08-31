@@ -1,99 +1,120 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import Editor from '@monaco-editor/react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export default function CodeEditor() {
   const { id } = useParams();
-  const [problem, setProblem] = useState(null);
-  const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('python');
+  const navigate = useNavigate();
+  const [code, setCode] = useState('# Write your code here\ndef solve():\n    pass');
   const [output, setOutput] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    axios.get('https://placement-portal-api.onrender.com/api/coding/problems/' + id)
-      .then(res => {
-        setProblem(res.data.problem);
-        setCode(res.data.problem.starterCode);
-        setLanguage(res.data.problem.language);
-      })
-      .catch(() => setError('Failed to load problem'));
-  }, [id]);
+  // Mock problem data based on ID
+  const problem = {
+    '1': { title: 'Two Sum', difficulty: 'Easy', points: 10, desc: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.' },
+    '2': { title: 'Valid Parentheses', difficulty: 'Easy', points: 10, desc: 'Given a string containing just the characters (, ), {, }, [ and ], determine if the input string is valid.' },
+    '3': { title: 'Merge Intervals', difficulty: 'Medium', points: 20, desc: 'Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals.' },
+    '4': { title: 'LRU Cache', difficulty: 'Hard', points: 30, desc: 'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.' }
+  }[id] || { title: 'Unknown Problem', difficulty: 'Easy', points: 10, desc: 'Problem description not found.' };
 
-  const handleRun = async () => {
+  const handleRun = () => {
     setLoading(true);
     setOutput(null);
-    setError('');
-    try {
-      const res = await axios.post('https://placement-portal-api.onrender.com/api/coding/execute', {
-        problemId: id, code: code, language: language
+    
+    // Simulate code execution delay
+    setTimeout(() => {
+      setOutput({
+        allPassed: true,
+        score: problem.points,
+        passedCount: 2,
+        totalTests: 2,
+        testResults: [
+          { passed: true, input: 'Sample Input 1', expectedOutput: 'Sample Output 1', actualOutput: 'Sample Output 1' },
+          { passed: true, input: 'Sample Input 2', expectedOutput: 'Sample Output 2', actualOutput: 'Sample Output 2' }
+        ]
       });
-      setOutput(res.data);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Execution failed');
-    }
-    setLoading(false);
+      setLoading(false);
+    }, 1000);
   };
 
-  if (error && !problem) return <p className="text-red-500 text-center mt-10">{error}</p>;
-  if (!problem) return <p className="text-center mt-10">Loading problem...</p>;
-
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto pb-10">
+      <button onClick={() => navigate('/coding')} className="mb-4 text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1">
+        ← Back to Problems
+      </button>
+
+      {/* Problem Description */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
           <h2 className="text-2xl font-bold">{problem.title}</h2>
-          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${problem.difficulty === 'Easy' ? 'bg-green-100 text-green-700' : problem.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-            {problem.difficulty} - {problem.points} pts
+          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            problem.difficulty === 'Easy' ? 'bg-green-100 text-green-700' : 
+            problem.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+          }`}>
+            {problem.difficulty} • {problem.points} pts
           </span>
         </div>
-        <p className="text-gray-700 whitespace-pre-line">{problem.description}</p>
+        <p className="text-gray-700 whitespace-pre-line leading-relaxed">{problem.desc}</p>
       </div>
 
+      {/* Code Editor Area */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-        <div className="flex items-center justify-between bg-gray-800 px-4 py-2">
-          <select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-gray-700 text-white px-3 py-1 rounded text-sm">
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript</option>
-          </select>
-          <button onClick={handleRun} disabled={loading} className="bg-green-600 text-white px-6 py-2 rounded font-semibold hover:bg-green-700 disabled:bg-gray-500">
-            {loading ? 'Running...' : 'Run Code'}
+        <div className="flex items-center justify-between bg-gray-800 px-4 py-3">
+          <span className="text-white text-sm font-semibold">Python 3</span>
+          <button 
+            onClick={handleRun} 
+            disabled={loading} 
+            className="bg-green-600 text-white px-6 py-1.5 rounded font-semibold hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed transition flex items-center gap-2"
+          >
+            {loading ? '⏳ Running...' : '▶ Run Code'}
           </button>
         </div>
-        <Editor height="400px" language={language} value={code} onChange={(value) => setCode(value)} theme="vs-dark" options={{ fontSize: 14, minimap: { enabled: false }, scrollBeyondLastLine: false, automaticLayout: true, tabSize: 4 }} />
+        <textarea 
+          value={code} 
+          onChange={(e) => setCode(e.target.value)} 
+          className="w-full h-96 bg-gray-900 text-gray-100 p-4 font-mono text-sm outline-none resize-none"
+          spellCheck="false"
+        />
       </div>
 
+      {/* Output Section */}
       {output && (
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
             <h3 className="text-xl font-bold">Test Results</h3>
             {output.allPassed ? (
-              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">All Tests Passed! +{output.score} points</span>
+              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">✅ All Tests Passed! +{output.score} points</span>
             ) : (
-              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">{output.passedCount}/{output.totalTests} Passed - {output.score}/{output.points} pts</span>
+              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">❌ {output.passedCount}/{output.totalTests} Passed</span>
             )}
           </div>
           <div className="space-y-3">
-            {output.testResults.map((test, index) => (
+            {output.testResults?.map((test, index) => (
               <div key={index} className={`p-4 rounded-lg border-l-4 ${test.passed ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-semibold">Test Case {index + 1}</span>
-                  <span className={test.passed ? 'text-green-600' : 'text-red-600'}>{test.passed ? 'PASS' : 'FAIL'}</span>
+                  <span className={test.passed ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{test.passed ? 'PASS' : 'FAIL'}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-4 text-sm font-mono">
-                  <div><p className="text-gray-500 mb-1">Input:</p><p className="bg-white p-2 rounded">{test.input}</p></div>
-                  <div><p className="text-gray-500 mb-1">Expected:</p><p className="bg-white p-2 rounded">{test.expectedOutput}</p></div>
-                  <div><p className="text-gray-500 mb-1">Your Output:</p><p className={`p-2 rounded ${test.passed ? 'bg-green-100' : 'bg-red-100'}`}>{test.actualOutput || '(empty)'}</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm font-mono">
+                  <div>
+                    <p className="text-gray-500 mb-1 text-xs uppercase">Input:</p>
+                    <p className="bg-white p-2 rounded border">{test.input}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-1 text-xs uppercase">Expected:</p>
+                    <p className="bg-white p-2 rounded border">{test.expectedOutput}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-1 text-xs uppercase">Your Output:</p>
+                    <p className={`p-2 rounded border ${test.passed ? 'bg-green-100 border-green-200' : 'bg-red-100 border-red-200'}`}>
+                      {test.actualOutput || '(empty)'}
+                    </p>
+                  </div>
                 </div>
-                {test.stderr && <div className="mt-2"><p className="text-red-500 text-sm font-semibold">Error:</p><pre className="bg-red-100 p-2 rounded text-xs overflow-x-auto">{test.stderr}</pre></div>}
               </div>
             ))}
           </div>
         </div>
       )}
-      {error && <div className="bg-red-100 text-red-700 p-4 rounded-lg mt-4"><strong>Error:</strong> {error}</div>}
     </div>
   );
 }

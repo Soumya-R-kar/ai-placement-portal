@@ -53,6 +53,7 @@ app.use('/api/ai', aiChatRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/companies', companyRoutes);
+app.use('/api/progress', require('./routes/progressRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -62,7 +63,7 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
-
+app.use('/api/problems', require('./routes/problemRoutes'));
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
