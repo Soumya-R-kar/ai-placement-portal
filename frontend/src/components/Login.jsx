@@ -11,15 +11,18 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+   const handleSubmit = async (e) => {
+    e.preventDefault(); // ⚠️ THIS LINE IS CRITICAL. It stops the page from refreshing.
     setError('');
     setLoading(true);
+    console.log("Form submitted with:", email, password);
     try {
       await login(email, password);
+      console.log("Login succeeded, navigating...");
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      console.error("Login failed in component:", err);
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     }
     setLoading(false);
   };
