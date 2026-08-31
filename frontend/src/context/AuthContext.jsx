@@ -3,15 +3,14 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// ✅ YOUR LIVE BACKEND URL (Hardcoded for reliability)
-const API_URL = 'https://ai-placement-portal-5her.onrender.com';
+// Always use localhost for local development
+const API_URL = 'http://localhost:5000';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in (on page refresh)
   useEffect(() => {
     const fetchProfile = async () => {
       if (token) {
@@ -21,7 +20,6 @@ export const AuthProvider = ({ children }) => {
           });
           setUser(res.data.user);
         } catch (err) {
-          console.error("Session expired or invalid token");
           localStorage.removeItem('token');
           setToken(null);
         }
@@ -32,49 +30,19 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-    try {
-      const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
-      
-      // Save token and user data
-      localStorage.setItem('token', res.data.token);
-      setToken(res.data.token);
-      setUser(res.data.user);
-      
-      // Update streak silently in background
-      try {
-        await axios.post(`${API_URL}/api/progress/streak`, {}, {
-          headers: { Authorization: `Bearer ${res.data.token}` }
-        });
-      } catch (err) {
-        console.log('Streak update skipped');
-      }
-      
-      return res.data;
-    } catch (error) {
-      console.error("Login failed:", error.response?.data || error.message);
-      throw error;
-    }
+    const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+    localStorage.setItem('token', res.data.token);
+    setToken(res.data.token);
+    setUser(res.data.user);
+    return res.data;
   };
 
   const register = async (name, email, password, college) => {
-    try {
-      const res = await axios.post(`${API_URL}/api/auth/register`, { 
-        name, 
-        email, 
-        password, 
-        college 
-      });
-      
-      // Save token and user data
-      localStorage.setItem('token', res.data.token);
-      setToken(res.data.token);
-      setUser(res.data.user);
-      
-      return res.data;
-    } catch (error) {
-      console.error("Registration failed:", error.response?.data || error.message);
-      throw error;
-    }
+    const res = await axios.post(`${API_URL}/api/auth/register`, { name, email, password, college });
+    localStorage.setItem('token', res.data.token);
+    setToken(res.data.token);
+    setUser(res.data.user);
+    return res.data;
   };
 
   const logout = () => {
