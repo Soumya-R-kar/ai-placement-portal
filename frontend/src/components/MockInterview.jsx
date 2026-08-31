@@ -43,7 +43,7 @@ export default function MockInterview() {
     if (!userAnswer.trim()) return alert('Please answer first');
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/ai/interview', { question, userAnswer, role });
+      const res = await axios.post('https://placement-portal-api.onrender.com/api/ai/interview', { question, userAnswer, role });
       setFeedback(res.data.feedback);
       speak('You scored ' + res.data.feedback.score + ' out of 10. ' + res.data.feedback.feedback);
     } catch { alert('Failed'); }

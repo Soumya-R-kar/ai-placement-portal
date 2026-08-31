@@ -8,7 +8,7 @@ export default function Resources() {
   const [selectedLevel, setSelectedLevel] = useState('All');
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/resources').then(res => setResources(res.data.resources));
+    axios.get('https://placement-portal-api.onrender.com/api/resources').then(res => setResources(res.data.resources));
   }, []);
 
   const subjects = ['All', ...new Set(resources.map(r => r.subject))];

@@ -7,7 +7,7 @@ export default function ProblemList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/coding/problems')
+    axios.get('https://placement-portal-api.onrender.com/api/coding/problems')
       .then(res => {
         setProblems(res.data.problems);
         setLoading(false);

@@ -14,7 +14,7 @@ export default function DoubtSolver() {
     setMessages([...messages, userMsg]);
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/ai/doubt', { question: input });
+      const res = await axios.post('https://placement-portal-api.onrender.com/api/ai/doubt', { question: input });
       setMessages(prev => [...prev, { role: 'ai', text: res.data.answer }]);
     } catch {
       setMessages(prev => [...prev, { role: 'ai', text: '❌ Sorry, something went wrong.' }]);

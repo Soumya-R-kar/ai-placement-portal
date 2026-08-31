@@ -3,8 +3,8 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Use production URL on Vercel, localhost for local development
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// HARDCODED production URL - change this to your Render URL
+const API_URL = 'https://placement-portal-api.onrender.com';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('token', res.data.token);
     setToken(res.data.token);
     setUser(res.data.user);
-    
     try {
       await axios.post(`${API_URL}/api/progress/streak`, {}, {
         headers: { Authorization: `Bearer ${res.data.token}` }
@@ -40,7 +39,6 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.log('Streak update failed');
     }
-    
     return res.data;
   };
 

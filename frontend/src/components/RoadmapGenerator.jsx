@@ -12,7 +12,7 @@ export default function RoadmapGenerator() {
     if (!role || !days) return alert('Please fill role and days');
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/ai/roadmap', { targetRole: role, daysAvailable: days, currentSkills: skills });
+      const res = await axios.post('https://placement-portal-api.onrender.com/api/ai/roadmap', { targetRole: role, daysAvailable: days, currentSkills: skills });
       setRoadmap(res.data.roadmap);
     } catch { alert('Failed to generate roadmap'); }
     setLoading(false);

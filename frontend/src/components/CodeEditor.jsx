@@ -13,7 +13,7 @@ export default function CodeEditor() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/coding/problems/' + id)
+    axios.get('https://placement-portal-api.onrender.com/api/coding/problems/' + id)
       .then(res => {
         setProblem(res.data.problem);
         setCode(res.data.problem.starterCode);
@@ -27,7 +27,7 @@ export default function CodeEditor() {
     setOutput(null);
     setError('');
     try {
-      const res = await axios.post('http://localhost:5000/api/coding/execute', {
+      const res = await axios.post('https://placement-portal-api.onrender.com/api/coding/execute', {
         problemId: id, code: code, language: language
       });
       setOutput(res.data);
